@@ -8,7 +8,6 @@
 	let W = $state(0);
 	let H = $state(0);
 	let animId: number;
-	let running = false;
 
 	// Terrain config
 	const T_ROWS = 30;
@@ -77,35 +76,10 @@
 		ctx.fillRect(0, horizon - 40, W, 100);
 	}
 
-	/** Start the animation loop if not already running */
-	function startLoop(): void {
-		if (running) return;
-		running = true;
-		animId = requestAnimationFrame(frame);
-	}
-
-	/** Stop the animation loop */
-	function stopLoop(): void {
-		running = false;
-		cancelAnimationFrame(animId);
-	}
-
-	// React to visibility changes
-	$effect(() => {
-		if (visible) {
-			startLoop();
-		} else {
-			stopLoop();
-		}
-	});
-
-	/** Main render loop */
+	/** Main render loop — always runs */
 	function frame(t: number): void {
 		ctx.clearRect(0, 0, W, H);
-		ctx.globalAlpha = 1;
-
-		if (visible) drawTerrain(t);
-
+		drawTerrain(t);
 		animId = requestAnimationFrame(frame);
 	}
 
@@ -127,16 +101,16 @@
 		ctx = canvas.getContext('2d')!;
 		resize();
 		window.addEventListener('resize', resize);
-		startLoop();
+		animId = requestAnimationFrame(frame);
 
 		return () => {
 			window.removeEventListener('resize', resize);
-			stopLoop();
+			cancelAnimationFrame(animId);
 		};
 	});
 </script>
 
-<canvas bind:this={canvas} class="terrain-canvas"></canvas>
+<canvas bind:this={canvas} class="terrain-canvas" class:dimmed={!visible}></canvas>
 
 <style>
 	.terrain-canvas {
@@ -146,6 +120,10 @@
 		width: 100%;
 		height: 100%;
 		pointer-events: none;
-		z-index: 80;
+		z-index: 0;
+		transition: opacity 0.5s ease;
+	}
+	.terrain-canvas.dimmed {
+		opacity: 0.35;
 	}
 </style>
