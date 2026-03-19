@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Inter+Tight:wght@200;300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+	--bg: #050507;
+	--surface: #0e0e13;
+	--surface-alt: #141419;
+	--border: #25252e;
+	--text: #ededed;
+	--text-secondary: #8e8e9c;
+	--text-dim: #62627a;
+	--gold: #c8a44e;
+	--gold-light: #dfc162;
+	--gold-glow: rgba(200, 164, 78, 0.08);
+	--gold-glow-strong: rgba(200, 164, 78, 0.18);
+	--green: #4fce68;
+	--green-glow: rgba(79, 206, 104, 0.12);
+	--red: #e8845a;
+
+	--font-sans: 'Inter', -apple-system, sans-serif;
+	--font-tight: 'Inter Tight', 'Inter', -apple-system, sans-serif;
+	--font-mono: 'DM Mono', monospace;
+	--font-serif: 'Instrument Serif', serif;
+
+	/* Z-index scale */
+	/* Canvas: 80 → MiniBal: 150 → Snd btn: 160 → TabNav: 200 →
+	   Confetti: 250 → VaultSheet: 350/360 → ConfirmModal: 400 →
+	   Toast: 450 → DevPanel: 500 → Noise overlay: 999 */
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+*::-webkit-scrollbar {
+	display: none;
+}
+* {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+html {
+	overflow: hidden;
+	height: 100%;
+}
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	overflow: hidden;
+	height: 100%;
+}
+
+/* Noise texture overlay */
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 999;
+	opacity: 0.04;
+	mix-blend-mode: overlay;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	background-size: 256px 256px;
+}
+
+/* Shared animations */
+@keyframes glowPulse {
+	0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+	50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes dotPulse {
+	0%, 100% { box-shadow: 0 0 10px rgba(200, 164, 78, 0.5); }
+	50% { box-shadow: 0 0 16px rgba(200, 164, 78, 0.7); }
+}
