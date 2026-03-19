@@ -55,8 +55,13 @@
 		return [...cur, ...done, ...lock];
 	});
 
-	// Weekly earnings estimate from daily rate
-	let dailyEst = $derived(balanceStore.eps * 86400);
+	// Weekly earnings estimate from vault APY (not from eps which may be inflated for display)
+	let realDailyEst = $derived(() => {
+		const avg = vaultStore.avgApy;
+		const total = vaultStore.totalDepositedUsd || balanceStore.balance;
+		return total * (avg / 100) / 365;
+	});
+	let dailyEst = $derived(realDailyEst());
 	let weeklyData = $derived(Array.from({ length: 7 }, () => dailyEst));
 	let weeklyTotal = $derived(dailyEst * 7);
 	const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

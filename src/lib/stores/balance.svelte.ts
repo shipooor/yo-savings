@@ -8,9 +8,15 @@ let totalEarned = $state(0);
 
 // Derived
 let inc = $derived(eps / FPS);
-let rateDisplay = $derived(eps >= 1 ? '$' + eps.toFixed(1) : '$' + eps.toFixed(4));
-let showDecimals = $derived(eps < 1);
-let showExtraDecimals = $derived(eps < 0.005);
+let dailyRate = $derived(eps * 86400);
+let rateDisplay = $derived(
+	dailyRate >= 100 ? '$' + dailyRate.toFixed(0) + '/day'
+	: dailyRate >= 1 ? '$' + dailyRate.toFixed(2) + '/day'
+	: dailyRate >= 0.01 ? '$' + dailyRate.toFixed(4) + '/day'
+	: '$' + dailyRate.toFixed(2) + '/day'
+);
+let showDecimals = $derived(balance < 10000);
+let showExtraDecimals = $derived(balance < 100);
 
 // Ticker
 let tickerInterval: ReturnType<typeof setInterval> | null = null;
@@ -73,10 +79,6 @@ export const balanceStore = {
 	},
 	get fps() {
 		return FPS;
-	},
-
-	setEps(val: number) {
-		eps = val;
 	},
 
 	seedReal,

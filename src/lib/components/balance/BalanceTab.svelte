@@ -117,7 +117,7 @@
 			</div>
 
 			<div class="rate-row">
-				<div class="rate"><span class="p">+</span>{balanceStore.rateDisplay}/s</div>
+				<div class="rate"><span class="p">+</span>{balanceStore.rateDisplay}</div>
 				<div class="dot-sep"></div>
 				<div class="today-earn">today <strong>+${balanceStore.todayEarned.toFixed(2)}</strong></div>
 			</div>

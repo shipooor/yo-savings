@@ -7,7 +7,6 @@
 	import HistoryTab from '$lib/components/history/HistoryTab.svelte';
 	import MiniBal from '$lib/components/MiniBal.svelte';
 	import Canvas from '$lib/components/balance/Canvas.svelte';
-	import DevPanel from '$lib/components/DevPanel.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import Confetti from '$lib/components/Confetti.svelte';
 	import { balanceStore } from '$lib/stores/balance.svelte';
@@ -40,9 +39,6 @@
 
 <TabNav bind:activeTab />
 
-{#if import.meta.env.DEV}
-	<DevPanel />
-{/if}
 <Toast />
 <Confetti />
 

@@ -14,7 +14,7 @@
 <div class="mini-bal" class:show={realShow}>
 	<span class="mb-logo">yo</span>
 	<span class="mb-val"><span class="mini-sym">$</span><span>{formatted}</span></span>
-	<span class="mb-rate">+{balanceStore.rateDisplay}/s</span>
+	<span class="mb-rate">+{balanceStore.rateDisplay}</span>
 </div>
 
 <style>
