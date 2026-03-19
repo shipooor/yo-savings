@@ -231,18 +231,17 @@
 	}
 	.vault-sheet {
 		position: fixed;
-		bottom: 0;
+		bottom: 72px;
 		left: 50%;
 		transform: translateX(-50%) translateY(100%);
-		width: 100%;
-		max-width: 430px;
+		width: calc(100% - 16px);
+		max-width: 414px;
 		background: var(--surface);
 		border: 1px solid var(--border);
-		border-bottom: none;
-		border-radius: 20px 20px 0 0;
-		padding: 0 24px calc(24px + env(safe-area-inset-bottom));
+		border-radius: 20px;
+		padding: 0 24px 24px;
 		z-index: 360;
-		max-height: 85vh;
+		max-height: calc(100vh - 90px);
 		overflow-y: auto;
 		transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 	}
