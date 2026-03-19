@@ -254,13 +254,13 @@
 		height: 4px;
 		border-radius: 2px;
 		background: var(--border);
-		margin: 12px auto 20px;
+		margin: 12px auto 14px;
 	}
 	.vs-header {
 		display: flex;
 		align-items: center;
 		gap: 14px;
-		margin-bottom: 24px;
+		margin-bottom: 16px;
 	}
 	.vs-icon {
 		width: 44px;
@@ -287,11 +287,11 @@
 	.vs-stats {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 16px;
-		margin-bottom: 24px;
+		gap: 10px;
+		margin-bottom: 16px;
 	}
 	.vs-stat {
-		padding: 14px;
+		padding: 10px 14px;
 		border-radius: 12px;
 		background: rgba(255, 255, 255, 0.03);
 	}
@@ -301,11 +301,11 @@
 		text-transform: uppercase;
 		letter-spacing: 1.2px;
 		font-weight: 400;
-		margin-bottom: 6px;
+		margin-bottom: 4px;
 	}
 	.vs-stat-val {
 		font-family: var(--font-tight);
-		font-size: 16px;
+		font-size: 15px;
 		font-weight: 400;
 		color: var(--text-secondary);
 		font-variant-numeric: tabular-nums;
@@ -319,11 +319,11 @@
 		background: transparent;
 		border-radius: 0;
 		padding: 0;
-		margin-bottom: 14px;
+		margin-bottom: 10px;
 	}
 	.act-tab {
 		flex: 1;
-		padding: 12px;
+		padding: 10px;
 		border: none;
 		border-radius: 0;
 		font-family: var(--font-sans);
