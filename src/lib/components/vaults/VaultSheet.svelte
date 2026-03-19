@@ -368,6 +368,7 @@
 	.act-row {
 		display: flex;
 		gap: 10px;
+		margin-top: 15px;
 		margin-bottom: 12px;
 	}
 	.act-in-wrap {
@@ -416,7 +417,8 @@
 	.act-btn {
 		border: none;
 		border-radius: 100px;
-		padding: 14px 28px;
+		padding: 14px 0;
+		min-width: 130px;
 		font-family: var(--font-sans);
 		font-size: 14px;
 		font-weight: 500;
