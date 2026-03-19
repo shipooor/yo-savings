@@ -14,7 +14,7 @@
 		progress?: number;
 	};
 
-	let totalEarned = $derived(balanceStore.isDemo ? 0 : vaultStore.totalEarned);
+	let totalEarned = $derived(vaultStore.totalEarned);
 
 	// Find the next goal
 	let nextGoal = $derived(GOALS.find((g) => g > totalEarned) ?? GOALS[GOALS.length - 1]);

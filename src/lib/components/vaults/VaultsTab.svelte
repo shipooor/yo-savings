@@ -33,7 +33,7 @@
 					}
 				});
 			} else {
-				balanceStore.seedDemo();
+				balanceStore.reset();
 			}
 		}
 	});

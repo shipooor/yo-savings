@@ -1,11 +1,10 @@
 const FPS = 20;
 
-// Core state — starts with demo values, overridden when wallet connects
-let balance = $state(14280.47);
-let eps = $state(0.0041);
-let todayEarned = $state(4.12);
-let totalEarned = $state(214.37);
-let isDemo = $state(true);
+// Core state — starts at zero, populated when wallet connects
+let balance = $state(0);
+let eps = $state(0);
+let todayEarned = $state(0);
+let totalEarned = $state(0);
 
 // Derived
 let inc = $derived(eps / FPS);
@@ -38,15 +37,13 @@ function seedReal(totalUsd: number, apyWeighted: number, earnedUsd: number) {
 	eps = yearlyEarning / (365 * 24 * 3600);
 	totalEarned = earnedUsd;
 	todayEarned = yearlyEarning / 365;
-	isDemo = false;
 }
 
-function seedDemo() {
-	balance = 14280.47;
-	eps = 0.0041;
-	todayEarned = 4.12;
-	totalEarned = 214.37;
-	isDemo = true;
+function reset() {
+	balance = 0;
+	eps = 0;
+	todayEarned = 0;
+	totalEarned = 0;
 }
 
 export const balanceStore = {
@@ -82,12 +79,8 @@ export const balanceStore = {
 		eps = val;
 	},
 
-	get isDemo() {
-		return isDemo;
-	},
-
 	seedReal,
-	seedDemo,
+	reset,
 	startTicker,
 	stopTicker
 };

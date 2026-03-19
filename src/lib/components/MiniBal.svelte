@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { balanceStore } from '$lib/stores/balance.svelte';
+	import { wallet } from '$lib/stores/wallet.svelte';
 
 	let { show = false }: { show?: boolean } = $props();
+
+	let realShow = $derived(show && wallet.isConnected && balanceStore.balance > 0);
 
 	let formatted = $derived(
 		balanceStore.balance.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 	);
 </script>
 
-<div class="mini-bal" class:show>
+<div class="mini-bal" class:show={realShow}>
 	<span class="mb-logo">yo</span>
 	<span class="mb-val"><span class="mini-sym">$</span><span>{formatted}</span></span>
 	<span class="mb-rate">+{balanceStore.rateDisplay}/s</span>
