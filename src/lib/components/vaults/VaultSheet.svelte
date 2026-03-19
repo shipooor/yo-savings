@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ConfirmModal from './ConfirmModal.svelte';
 	import type { Vault } from '$lib/types/vault';
 	import { audio } from '$lib/stores/audio.svelte';
 	import { confettiStore } from '$lib/stores/confetti.svelte';
@@ -17,15 +16,14 @@
 
 	let mode = $state<'deposit' | 'withdraw'>('deposit');
 	let amount = $state('');
-	let confirmShow = $state(false);
+	let confirming = $state(false);
 	let processing = $state(false);
 
-	// Reset state when vault changes
 	$effect(() => {
 		if (show) {
 			mode = 'deposit';
 			amount = '';
-			confirmShow = false;
+			confirming = false;
 			processing = false;
 		}
 	});
@@ -54,22 +52,18 @@
 	function handleMax() {
 		if (!vault) return;
 		if (mode === 'deposit') {
-			// Use raw wallet balance for precision
 			if (vault.walletBalanceRaw > 0n) {
 				amount = formatTokenAmount(vault.walletBalanceRaw, vault.underlyingDecimals);
 			} else {
-				const source = vault.walletBalance;
-				const cleaned = source.replace(/[^0-9.,]/g, '').replace(/,/g, '');
+				const cleaned = vault.walletBalance.replace(/[^0-9.,]/g, '').replace(/,/g, '');
 				const match = cleaned.match(/[\d]+(?:\.[\d]+)?/);
 				amount = match ? match[0] : '';
 			}
 		} else {
-			// Use raw deposited balance for precision
 			if (vault.depositedRaw > 0n) {
 				amount = formatTokenAmount(vault.depositedRaw, vault.underlyingDecimals);
 			} else {
-				const source = vault.deposited;
-				const cleaned = source.replace(/[^0-9.,]/g, '').replace(/,/g, '');
+				const cleaned = vault.deposited.replace(/[^0-9.,]/g, '').replace(/,/g, '');
 				const match = cleaned.match(/[\d]+(?:\.[\d]+)?/);
 				amount = match ? match[0] : '';
 			}
@@ -78,12 +72,15 @@
 
 	function handleAction() {
 		if (!amount || !isValidAmount(amount)) return;
-		confirmShow = true;
+		confirming = true;
+	}
+
+	function handleBack() {
+		if (!processing) confirming = false;
 	}
 
 	async function handleConfirm() {
 		if (!vault || processing) return;
-
 		processing = true;
 		try {
 			if (mode === 'deposit') {
@@ -93,127 +90,133 @@
 				await vaultStore.redeem(vault, amount);
 				toasts.success(`Withdrawn ${amount} from ${vault.name}`);
 			}
-
 			audio.chime();
 			confettiStore.fire();
-			confirmShow = false;
+			confirming = false;
 			amount = '';
 			setTimeout(() => onclose(), 350);
 		} catch (e) {
 			const msg = e instanceof Error ? e.message : 'Transaction failed';
-			// Clean up common wallet error messages
 			const cleanMsg = msg.includes('User rejected') ? 'Transaction rejected' : msg;
 			toasts.error(cleanMsg);
-			confirmShow = false;
+			confirming = false;
 		} finally {
 			processing = false;
 		}
 	}
-
-	function handleConfirmCancel() {
-		if (!processing) {
-			confirmShow = false;
-		}
-	}
 </script>
 
-<svelte:window onkeydown={(e) => { if (e.key === 'Escape' && show && !confirmShow && !processing) onclose(); }} />
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape' && show && !processing) { if (confirming) confirming = false; else onclose(); } }} />
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="vault-sheet-overlay" class:show onclick={handleOverlayClick}>
 	<div class="vault-sheet">
 		{#if vault}
-			<button class="vs-close" onclick={onclose} disabled={processing} aria-label="Close">
-				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+			<button class="vs-close" onclick={() => { if (!processing) { if (confirming) confirming = false; else onclose(); }}} aria-label={confirming ? 'Back' : 'Close'}>
+				{#if confirming}
+					<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+				{:else}
+					<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+				{/if}
 			</button>
 
-			<div class="vs-header">
-				<div class="vs-icon">{vault.icon}</div>
-				<div>
-					<div class="vs-title">{vault.name}</div>
-					<div class="vs-chain">{vault.sub}</div>
+			{#if !confirming}
+				<div class="vs-header">
+					<div class="vs-icon">{vault.icon}</div>
+					<div>
+						<div class="vs-title">{vault.name}</div>
+						<div class="vs-chain">{vault.sub}</div>
+					</div>
 				</div>
-			</div>
 
-			<div class="vs-stats">
-				<div class="vs-stat">
-					<div class="vs-stat-lbl">Deposited</div>
-					<div class="vs-stat-val">{vault.deposited}</div>
+				<div class="vs-stats">
+					<div class="vs-stat">
+						<div class="vs-stat-lbl">Deposited</div>
+						<div class="vs-stat-val">{vault.deposited}</div>
+					</div>
+					<div class="vs-stat">
+						<div class="vs-stat-lbl">APY</div>
+						<div class="vs-stat-val gold">{vault.apy}</div>
+					</div>
+					<div class="vs-stat">
+						<div class="vs-stat-lbl">Earned</div>
+						<div class="vs-stat-val gold">{vault.earned}</div>
+					</div>
+					<div class="vs-stat">
+						<div class="vs-stat-lbl">Daily est.</div>
+						<div class="vs-stat-val">{vault.dailyEst}</div>
+					</div>
 				</div>
-				<div class="vs-stat">
-					<div class="vs-stat-lbl">APY</div>
-					<div class="vs-stat-val gold">{vault.apy}</div>
-				</div>
-				<div class="vs-stat">
-					<div class="vs-stat-lbl">Earned</div>
-					<div class="vs-stat-val gold">{vault.earned}</div>
-				</div>
-				<div class="vs-stat">
-					<div class="vs-stat-lbl">Daily est.</div>
-					<div class="vs-stat-val">{vault.dailyEst}</div>
-				</div>
-			</div>
 
-			<div class="act-tabs">
-				<button
-					class="act-tab"
-					class:dep-mode={mode === 'deposit'}
-					onclick={() => (mode = 'deposit')}
-				>
-					Deposit
-				</button>
-				<button
-					class="act-tab"
-					class:red-mode={mode === 'withdraw'}
-					onclick={() => (mode = 'withdraw')}
-				>
-					Withdraw
-				</button>
-			</div>
+				<div class="act-tabs">
+					<button class="act-tab" class:dep-mode={mode === 'deposit'} onclick={() => (mode = 'deposit')}>Deposit</button>
+					<button class="act-tab" class:red-mode={mode === 'withdraw'} onclick={() => (mode = 'withdraw')}>Withdraw</button>
+				</div>
 
-			<div class="act-row">
-				<div class="act-in-wrap">
-					<input
-						class="act-in"
-						type="text"
-						inputmode="decimal"
-						placeholder="0.00"
-						maxlength={20}
-						value={amount}
-						oninput={handleAmountInput}
+				<div class="act-row">
+					<div class="act-in-wrap">
+						<input
+							class="act-in"
+							type="text"
+							inputmode="decimal"
+							placeholder="0.00"
+							maxlength={20}
+							value={amount}
+							oninput={handleAmountInput}
+						/>
+						<button class="act-max" onclick={handleMax}>MAX</button>
+					</div>
+					<button class="act-btn {mode === 'deposit' ? 'dep' : 'red'}" onclick={handleAction}>
+						{mode === 'deposit' ? 'Deposit' : 'Withdraw'}
+					</button>
+				</div>
+
+				<div class="act-info">
+					<span>{mode === 'deposit' ? 'Wallet balance:' : 'Deposited:'}</span>
+					<span class="hi">{mode === 'deposit' ? vault.walletBalance : vault.deposited}</span>
+				</div>
+			{:else}
+				<!-- Confirm view — inline -->
+				<div class="confirm-view">
+					<div class="cf-title">Confirm {mode === 'deposit' ? 'Deposit' : 'Withdrawal'}</div>
+
+					<div class="cf-amount">
+						<span class="cf-num">{amount}</span>
+						<span class="cf-token">{vault.name.replace('yo', '')}</span>
+					</div>
+
+					<div class="cf-rows">
+						<div class="cf-row">
+							<span>Vault</span>
+							<span class="cf-val">{vault.name}</span>
+						</div>
+						<div class="cf-row">
+							<span>Est. APY</span>
+							<span class="cf-val gold">{vault.apy}</span>
+						</div>
+						<div class="cf-row">
+							<span>Network</span>
+							<span class="cf-val">{vault.sub.split(' · ')[1] || 'Base'}</span>
+						</div>
+					</div>
+
+					<button
+						class="cf-btn {mode === 'deposit' ? 'dep' : 'red'}"
+						onclick={handleConfirm}
 						disabled={processing}
-					/>
-					<button class="act-max" onclick={handleMax} disabled={processing}>MAX</button>
+					>
+						{#if processing}
+							<span class="cf-spinner"></span>
+							Processing...
+						{:else}
+							Confirm {mode === 'deposit' ? 'Deposit' : 'Withdrawal'}
+						{/if}
+					</button>
 				</div>
-				<button
-					class="act-btn {mode === 'deposit' ? 'dep' : 'red'}"
-					onclick={handleAction}
-					disabled={processing}
-				>
-					{mode === 'deposit' ? 'Deposit' : 'Withdraw'}
-				</button>
-			</div>
-
-			<div class="act-info">
-				<span>{mode === 'deposit' ? 'Wallet balance:' : 'Deposited:'}</span>
-				<span class="hi">{mode === 'deposit' ? vault.walletBalance : vault.deposited}</span>
-			</div>
+			{/if}
 		{/if}
 	</div>
 </div>
-
-{#if vault}
-	<ConfirmModal
-		show={confirmShow}
-		{mode}
-		amount={amount}
-		vaultName={vault.name}
-		apy={vault.apy}
-		{processing}
-		oncancel={handleConfirmCancel}
-		onconfirm={handleConfirm}
-	/>
-{/if}
 
 <style>
 	.vault-sheet-overlay {
@@ -272,10 +275,6 @@
 	.vs-close:hover {
 		color: var(--text);
 		background: rgba(255, 255, 255, 0.1);
-	}
-	.vs-close:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
 	}
 	.vs-header {
 		display: flex;
@@ -337,9 +336,6 @@
 	.act-tabs {
 		display: flex;
 		gap: 2px;
-		background: transparent;
-		border-radius: 0;
-		padding: 0;
 		margin-bottom: 10px;
 	}
 	.act-tab {
@@ -397,9 +393,6 @@
 	.act-in::placeholder {
 		color: var(--text-dim);
 	}
-	.act-in:disabled {
-		opacity: 0.5;
-	}
 	.act-max {
 		position: absolute;
 		right: 0;
@@ -428,24 +421,16 @@
 		white-space: nowrap;
 		min-height: 48px;
 	}
-	.act-btn:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
 	.act-btn.dep {
 		background: var(--gold);
 		box-shadow: 0 0 20px rgba(200, 164, 78, 0.2);
 	}
-	.act-btn.dep:active:not(:disabled) {
-		transform: scale(0.95);
-	}
+	.act-btn.dep:active { transform: scale(0.95); }
 	.act-btn.red {
 		background: var(--red);
 		box-shadow: 0 0 20px rgba(232, 132, 90, 0.15);
 	}
-	.act-btn.red:active:not(:disabled) {
-		transform: scale(0.95);
-	}
+	.act-btn.red:active { transform: scale(0.95); }
 	.act-info {
 		display: flex;
 		justify-content: space-between;
@@ -454,5 +439,97 @@
 	}
 	.act-info .hi {
 		color: var(--gold);
+	}
+
+	/* Confirm view */
+	.confirm-view {
+		padding-top: 8px;
+	}
+	.cf-title {
+		font-family: var(--font-tight);
+		font-size: 20px;
+		font-weight: 400;
+		letter-spacing: -0.5px;
+		margin-bottom: 24px;
+	}
+	.cf-amount {
+		text-align: center;
+		margin-bottom: 28px;
+	}
+	.cf-num {
+		font-family: var(--font-tight);
+		font-size: 40px;
+		font-weight: 200;
+		letter-spacing: -2px;
+	}
+	.cf-token {
+		font-size: 16px;
+		color: var(--text-dim);
+		margin-left: 8px;
+		font-weight: 300;
+	}
+	.cf-rows {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		margin-bottom: 28px;
+	}
+	.cf-row {
+		display: flex;
+		justify-content: space-between;
+		padding: 14px 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+		font-size: 13px;
+		color: var(--text-dim);
+	}
+	.cf-row:last-child {
+		border-bottom: none;
+	}
+	.cf-val {
+		color: var(--text);
+		font-weight: 400;
+	}
+	.cf-val.gold {
+		color: var(--gold);
+	}
+	.cf-btn {
+		width: 100%;
+		padding: 16px;
+		border: none;
+		border-radius: 14px;
+		font-family: var(--font-sans);
+		font-size: 15px;
+		font-weight: 500;
+		color: var(--bg);
+		cursor: pointer;
+		transition: all 0.2s;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+	}
+	.cf-btn.dep {
+		background: var(--gold);
+		box-shadow: 0 0 24px rgba(200, 164, 78, 0.25);
+	}
+	.cf-btn.red {
+		background: var(--red);
+		box-shadow: 0 0 24px rgba(232, 132, 90, 0.2);
+	}
+	.cf-btn:active:not(:disabled) { transform: scale(0.97); }
+	.cf-btn:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+	}
+	.cf-spinner {
+		width: 16px;
+		height: 16px;
+		border: 2px solid rgba(0, 0, 0, 0.2);
+		border-top-color: var(--bg);
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+	@keyframes spin {
+		to { transform: rotate(360deg); }
 	}
 </style>
