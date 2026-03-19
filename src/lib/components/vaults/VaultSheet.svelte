@@ -123,7 +123,9 @@
 <div class="vault-sheet-overlay" class:show onclick={handleOverlayClick}>
 	<div class="vault-sheet">
 		{#if vault}
-			<div class="vs-handle"></div>
+			<button class="vs-close" onclick={onclose} disabled={processing} aria-label="Close">
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+			</button>
 
 			<div class="vs-header">
 				<div class="vs-icon">{vault.icon}</div>
@@ -231,29 +233,49 @@
 	}
 	.vault-sheet {
 		position: fixed;
-		bottom: 72px;
+		top: 50%;
 		left: 50%;
-		transform: translateX(-50%) translateY(100%);
-		width: calc(100% - 16px);
-		max-width: 414px;
+		transform: translate(-50%, -50%) scale(0.95);
+		width: calc(100% - 32px);
+		max-width: 400px;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: 20px;
-		padding: 0 24px 24px;
+		padding: 20px 24px 24px;
 		z-index: 360;
-		max-height: calc(100vh - 90px);
+		max-height: calc(100vh - 48px);
 		overflow-y: auto;
-		transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+		opacity: 0;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 	.vault-sheet-overlay.show .vault-sheet {
-		transform: translateX(-50%) translateY(0);
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
 	}
-	.vs-handle {
-		width: 36px;
-		height: 4px;
-		border-radius: 2px;
-		background: var(--border);
-		margin: 12px auto 14px;
+	.vs-close {
+		position: absolute;
+		top: 16px;
+		right: 16px;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 50%;
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--text-dim);
+		cursor: pointer;
+		transition: all 0.2s;
+		-webkit-tap-highlight-color: transparent;
+	}
+	.vs-close:hover {
+		color: var(--text);
+		background: rgba(255, 255, 255, 0.1);
+	}
+	.vs-close:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
 	}
 	.vs-header {
 		display: flex;
